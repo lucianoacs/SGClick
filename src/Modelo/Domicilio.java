@@ -11,16 +11,16 @@ package Modelo;
 public class Domicilio {
     private int codigo; 
     private String domicilio;
-//    private String localidad;
-//    private String provincia;
-//    private String pais;
+    private String localidad;
+    private String provincia;
+    private String pais;
 
-    public Domicilio(int codigo, String domicilio) {
+    public Domicilio(int codigo, String domicilio, String localidad, String provincia, String pais) {
         this.codigo = codigo;
         this.domicilio = domicilio;
-//        this.localidad = localidad;
-//        this.provincia = provincia;
-//        this.pais = pais;
+        this.localidad = localidad;
+        this.provincia = provincia;
+        this.pais = pais;
     }
 
     public int getCodigo() {
@@ -40,35 +40,33 @@ public class Domicilio {
         this.domicilio = domicilio;
     }
 
-//    public String getLocalidad() {
-//        return localidad;
-//    }
-//
-//    public void setLocalidad(String localidad) {
-//        this.localidad = localidad;
-//    }
-//
-//    public String getProvincia() {
-//        return provincia;
-//    }
-//
-//    public void setProvincia(String provincia) {
-//        this.provincia = provincia;
-//    }
-//
-//    public String getPais() {
-//        return pais;
-//    }
-//
-//    public void setPais(String pais) {
-//        this.pais = pais;
-//    }
+    public String getLocalidad() {
+        return localidad;
+    }
+
+    public void setLocalidad(String localidad) {
+        this.localidad = localidad;
+    }
+
+    public String getProvincia() {
+        return provincia;
+    }
+
+    public void setProvincia(String provincia) {
+        this.provincia = provincia;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
 
     @Override
     public String toString() {
-        return "Domicilio{" + "codigo=" + codigo + ", domicilio=" + domicilio + '}';
-    }
-    
-    
+        return "Domicilio{" + "codigo=" + codigo + ", domicilio=" + domicilio + ", localidad=" + localidad + ", provincia=" + provincia + ", pais=" + pais + '}';
+    } 
     
 }

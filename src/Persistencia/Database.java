@@ -3,6 +3,8 @@ package Persistencia;
 
 import Modelo.Cliente;
 import Modelo.Domicilio;
+import Modelo.EquipoDesarrollo;
+import Modelo.Proyecto;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -30,9 +32,12 @@ public class Database {
     public void agregarClientes(Cliente cl, Domicilio d){
         try{
             //hacer funcion para el incremental domicilio
-            String cadena1 = "insert into domicilio values (%1,'%2')"
+            String cadena1 = "insert into domicilio values (%1,'%2','%3','%4','%5')"
             .replace("%1",""+d.getCodigo())
-            .replace("%2",d.getDomicilio());            
+            .replace("%2",d.getDomicilio())
+            .replace("%3",d.getLocalidad())
+            .replace("%4",d.getProvincia())
+            .replace("%5",d.getPais());            
             
             String cadena2 = "insert into cliente values (%1,'%2','%3','%4',%5,%6)"
            .replace("%1",""+cl.getCuit()) 
@@ -50,6 +55,41 @@ public class Database {
             System.out.println(e);
         } 
     }
+    
+    public void agregarEquipo(EquipoDesarrollo eq){
+        try{
+            //hacer funcion para el incremental domicilio
+            String cadena1 = "insert into equipodesarrollo values (%1,'%2')"
+            .replace("%1",""+eq.getId())
+            .replace("%2",eq.getDescripción());            
+            
+            Connection c = getConnection();
+            c.createStatement().executeUpdate(cadena1);    
+        }
+        catch(Exception e){
+            System.out.println(e);
+        } 
+    }
+    
+//    public void agregarProyecto(Proyecto p, EquipoDesarrollo eq){
+//        try{
+//            agregarEquipo(eq);            
+//            
+//            String cadena1 = "insert into proyecto values (%1,'%2','%3','%4',%5,%6,%7)"
+//           .replace("%1",""+cl.getCuit()) 
+//           .replace("%2",cl.getTelefono())
+//           .replace("%3",cl.getMail())  
+//           .replace("%4",cl.getRazonSocial())
+//           .replace("%5",""+d.getCodigo())
+//           .replace("%6",""+cl.isVisible());
+//            
+//            Connection c = getConnection();
+//            c.createStatement().executeUpdate(cadena1);    
+//        }
+//        catch(Exception e){
+//            System.out.println(e);
+//        } 
+//    }
     
     public void eliminarCliente(double cuit){
         try{
@@ -69,13 +109,13 @@ public class Database {
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select a.cuit, a.telefono, a.razonSocial, a.mail, b.idDomicilio as 'id_domicilio', b.domicilio FROM cliente as a, domicilio as b WHERE a.Domicilio_idDomicilio = b.idDomicilio and visible = 1";
+          String sql = "select a.cuit, a.telefono, a.razonSocial, a.mail, b.idDomicilio as 'id_domicilio', b.domicilio, b.localidad, b.provincia, b.pais FROM cliente as a, domicilio as b WHERE a.Domicilio_idDomicilio = b.idDomicilio and visible = 1";
           ResultSet r = s.executeQuery(sql);
         
           
           while(r.next()){
               Cliente cl = new Cliente();
-              Domicilio d = new Domicilio(r.getInt("id_domicilio"),r.getString("domicilio"));              
+              Domicilio d = new Domicilio(r.getInt("id_domicilio"),r.getString("domicilio"),r.getString("localidad"),r.getString("provincia"),r.getString("pais"));              
               
               cl.setCuit(r.getDouble("cuit"));
               cl.setTelefono(r.getString("telefono"));
@@ -90,11 +130,71 @@ public class Database {
         return clientes;
     }
     
+     public ArrayList<Object> listarPais(){
+        ArrayList<Object> pais = new ArrayList<Object>();
+        try {
+          Connection c = getConnection();
+          Statement s = c.createStatement();
+          String sql = "select * from pais";
+          ResultSet r = s.executeQuery(sql);
+        
+          
+          while(r.next()){
+              Object[] p = {r.getInt("idpais"),r.getString("descripcion")};
+              pais.add(p);
+          }          
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return pais;
+    }
+     
+    public ArrayList<Object> listarLocalidad(){
+        ArrayList<Object> pais = new ArrayList<Object>();
+        try {
+          Connection c = getConnection();
+          Statement s = c.createStatement();
+          String sql = "select * from localidad";
+          ResultSet r = s.executeQuery(sql);
+        
+          
+          while(r.next()){
+              Object[] p = {r.getInt("idlocalidad"),r.getString("descripcion")};
+              pais.add(p);
+          }          
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return pais;
+    }
+    
+    public ArrayList<Object> listarProvincia(){
+        ArrayList<Object> pais = new ArrayList<Object>();
+        try {
+          Connection c = getConnection();
+          Statement s = c.createStatement();
+          String sql = "select * from provincia";
+          ResultSet r = s.executeQuery(sql);
+        
+          
+          while(r.next()){
+              Object[] p = {r.getInt("idprovincia"),r.getString("descripcion")};
+              pais.add(p);
+          }          
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return pais;
+    }
+    
     public void modificarCliente(Cliente cl, Domicilio d){
         try{
-            String cadena1 = "UPDATE domicilio SET domicilio='%1' WHERE id_Domicilio = %2"
-            .replace("%2",""+d.getCodigo())
-            .replace("%1",d.getDomicilio());            
+            String cadena1 = "UPDATE domicilio SET domicilio='%1',localidad='%2',provincia='%3',pais='%4' WHERE id_Domicilio = %5"
+            .replace("%5",""+d.getCodigo())
+            .replace("%1",d.getDomicilio())
+            .replace("%2",d.getLocalidad())
+            .replace("%3",d.getProvincia())
+            .replace("%4",d.getPais());            
             
             String cadena2 = "UPDATE cliente SET telefono= '%1',mail='%2',razonSocial='%3' WHERE CUIT = %4"
            .replace("%1",cl.getTelefono())
@@ -110,4 +210,6 @@ public class Database {
             System.out.println(e);
         } 
     }
+    
+    
 }
