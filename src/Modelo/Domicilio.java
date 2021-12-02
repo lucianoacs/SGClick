@@ -23,6 +23,10 @@ public class Domicilio {
         this.pais = pais;
     }
 
+    public Domicilio() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public int getCodigo() {
         return codigo;
     }

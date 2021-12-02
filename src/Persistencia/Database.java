@@ -20,7 +20,7 @@ public class Database {
         Connection c = null;
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            c = DriverManager.getConnection("jdbc:mysql://localhost:3306/clientes","root","");
+            c = DriverManager.getConnection("jdbc:mysql://localhost:3306/clientes","root","2531");
             System.out.println("CONECTADO");
         }
         catch(Exception e){
@@ -69,10 +69,10 @@ public class Database {
             System.out.println(e);
         } 
     }
-    
+        
     public void modificarCliente(Cliente cl, Domicilio d){
         try{
-            String cadena1 = "UPDATE domicilio SET domicilio='%1',localidad='%2',provincia='%3',pais='%4' WHERE id_Domicilio = %5"
+            String cadena1 = "UPDATE domicilio SET calleyaltura='%1',localidad='%2',provincia='%3',pais='%4' WHERE idDomicilio = %5"
             .replace("%5",""+d.getCodigo())
             .replace("%1",d.getDomicilio())
             .replace("%2",d.getLocalidad())
@@ -87,7 +87,7 @@ public class Database {
             
             Connection c = getConnection();
             c.createStatement().executeUpdate(cadena1);    
-            
+            c.createStatement().executeUpdate(cadena2);
         }
         catch(Exception e){
             System.out.println(e);
@@ -99,19 +99,20 @@ public class Database {
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select a.cuit, a.telefono, a.razonSocial, a.mail, b.idDomicilio as 'id_domicilio', b.domicilio, b.localidad, b.provincia, b.pais FROM cliente as a, domicilio as b WHERE a.Domicilio_idDomicilio = b.idDomicilio and visible = 1";
+          String sql = "select a.cuit, a.telefono, a.razonSocial, a.mail, b.idDomicilio as 'id_domicilio', b.calleyaltura, b.localidad, b.provincia, b.pais FROM cliente as a, domicilio as b WHERE a.Domicilio_idDomicilio = b.idDomicilio and visible = 1";
           ResultSet r = s.executeQuery(sql);
         
           
           while(r.next()){
               Cliente cl = new Cliente();
-              Domicilio d = new Domicilio(r.getInt("id_domicilio"),r.getString("domicilio"),r.getString("localidad"),r.getString("provincia"),r.getString("pais"));              
+              Domicilio d = new Domicilio(r.getInt("id_domicilio"),r.getString("calleyaltura"),r.getString("localidad"),r.getString("provincia"),r.getString("pais"));              
               
               cl.setCuit(r.getDouble("cuit"));
               cl.setTelefono(r.getString("telefono"));
               cl.setMail(r.getString("mail"));
               cl.setRazonSocial(r.getString("razonSocial"));                   
               cl.setDomicilio(d);
+                            
               clientes.add(cl);
           }          
         } catch(Exception e){
@@ -157,20 +158,27 @@ public class Database {
         } 
     }
     
-    public ArrayList<Object> listarProyectos(){
-        ArrayList<Object> proyectos = new ArrayList<Object>();
+    public ArrayList<Proyecto> listarProyectos(){
+        ArrayList<Proyecto> proyectos = new ArrayList<Proyecto>();
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select a.cuit, a.razonSocial, e.Nombre"
-                  + "from cliete as a, historial as b, factura as c, detalle as d"
-                  + "INNER JOIN proyecto as e"
-                  + "WHERE a.cuit = b.Cliente_CUIT and b.idHistorial = c.Historial_idHistorial and c.idFactura = d.Factura_idFactura and d.Proyecto_idProyecto = e.idProyecto";
+          String sql = "select distinct a.cuit, e.Nombre, e.fechaInicio, e.horasEmpleadas, e.finalizado"
+                  + " from cliente as a, historial as b, factura as c, detalle as d"
+                  + " INNER JOIN proyecto as e"
+                  + " WHERE a.cuit = b.Cliente_CUIT and b.idHistorial = c.Historial_idHistorial and c.idFactura = d.Factura_idFactura and d.Proyecto_idProyecto = e.idProyecto";
           ResultSet r = s.executeQuery(sql);       
           
           while(r.next()){
-              Object[] datos = {r.getInt("cuit"),r.getString("razonSocial"),r.getString("Nombre")};
-              proyectos.add(datos);
+              Proyecto p = new Proyecto();
+              Cliente cl = new Cliente();
+              
+              p.setNombre(r.getString("Nombre"));
+              p.setFechInicio((r.getString("fechaInicio")));
+              p.setHorasEmpleadas(r.getDouble("horasEmpleadas"));
+              p.setFinalizado(r.getBoolean("finalizado"));
+              
+              proyectos.add(p);
           }          
         } catch(Exception e){
             e.printStackTrace();
@@ -178,18 +186,41 @@ public class Database {
         return proyectos;
     }
     
-    //DOMICILIO    
-    public ArrayList<Object> listarPais(){
-        ArrayList<Object> pais = new ArrayList<Object>();
+    public ArrayList<Cliente> listarClienteProyectos(){
+        ArrayList<Cliente> clienteProyectos = new ArrayList<Cliente>();
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select * from pais";
-          ResultSet r = s.executeQuery(sql);
-        
+          String sql = "select distinct a.cuit, e.Nombre, e.fechaInicio, e.horasEmpleadas, e.finalizado"
+                  + " from cliente as a, historial as b, factura as c, detalle as d"
+                  + " INNER JOIN proyecto as e"
+                  + " WHERE a.cuit = b.Cliente_CUIT and b.idHistorial = c.Historial_idHistorial and c.idFactura = d.Factura_idFactura and d.Proyecto_idProyecto = e.idProyecto";
+          ResultSet r = s.executeQuery(sql);       
           
           while(r.next()){
-              Object[] p = {r.getInt("idpais"),r.getString("descripcion")};
+              Cliente cl = new Cliente();
+              
+              cl.setCuit(r.getDouble("cuit"));
+              
+              clienteProyectos.add(cl);
+          }          
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return clienteProyectos;
+    }
+    
+    //DOMICILIO   
+    public ArrayList<String> listarPais(){
+        ArrayList<String> pais = new ArrayList<String>();
+        try {
+          Connection c = getConnection();
+          Statement s = c.createStatement();
+          String sql = "select descripcion from pais";
+          ResultSet r = s.executeQuery(sql);
+          
+          while(r.next()){
+              String p = r.getString("descripcion");
               pais.add(p);
           }          
         } catch(Exception e){
@@ -198,41 +229,61 @@ public class Database {
         return pais;
     }
      
-    public ArrayList<Object> listarLocalidad(){
-        ArrayList<Object> pais = new ArrayList<Object>();
+    public ArrayList<String> listarLocalidad(){
+        ArrayList<String> localidades = new ArrayList<String>();
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select * from localidad";
+          String sql = "select descripcion from localidad";
           ResultSet r = s.executeQuery(sql);
         
           
           while(r.next()){
-              Object[] p = {r.getInt("idlocalidad"),r.getString("descripcion")};
-              pais.add(p);
+              String p = r.getString("descripcion");
+              localidades.add(p);
           }          
         } catch(Exception e){
             e.printStackTrace();
         }
-        return pais;
+        return localidades;
     }
     
-    public ArrayList<Object> listarProvincia(){
-        ArrayList<Object> pais = new ArrayList<Object>();
+    public ArrayList<String> listarProvincia(){
+        ArrayList<String> provincias = new ArrayList<String>();
         try {
           Connection c = getConnection();
           Statement s = c.createStatement();
-          String sql = "select * from provincia";
+          String sql = "select descripcion from provincia";
           ResultSet r = s.executeQuery(sql);
         
           
           while(r.next()){
-              Object[] p = {r.getInt("idprovincia"),r.getString("descripcion")};
-              pais.add(p);
+              String p = r.getString("descripcion");
+              provincias.add(p);
           }          
         } catch(Exception e){
             e.printStackTrace();
         }
-        return pais;
+        return provincias;
     }
+    
+    public int listarDomicilios(double cuit){
+        int dom = 0;
+        try {
+          Connection c = getConnection();
+          Statement s = c.createStatement();
+          String sql = "select a.idDomicilio FROM domicilio as a, cliente as b WHERE a.idDomicilio = b.Domicilio_idDomicilio and b.CUIT = %1".replace("%1",""+cuit);
+          ResultSet r = s.executeQuery(sql);        
+          
+          while(r.next()){
+              dom = r.getInt("idDomicilio");                    
+          }          
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return dom;
+    }
+    
+    //EMPLEADOS
+    
 }
